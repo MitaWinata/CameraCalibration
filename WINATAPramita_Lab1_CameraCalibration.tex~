@@ -1,0 +1,468 @@
+\documentclass[a4paper, 12pt]{journal}
+\usepackage[utf8]{inputenc}
+\usepackage[UKenglish]{babel}
+\usepackage{fancyhdr}
+\usepackage{anysize}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{lastpage}
+\usepackage[all]{xy}  % drawings
+\usepackage{listings} % code highlighting
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage[toc,page]{appendix}
+\usepackage{courier}
+% Margins
+\marginsize{1cm}{1cm}{1cm}{1cm}
+
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0} % This is the color used for comments
+\lstloadlanguages{Matlab} % Load Perl syntax for listings, for a list of other languages supported see: ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
+\lstset{language=Matlab, % Use Perl in this example
+        frame=L, % Single frame around code
+        basicstyle=\small\ttfamily, % Use small true type font
+        keywordstyle=[1]\color{Blue}\bf, % Perl functions bold and blue
+        keywordstyle=[2]\color{Purple}, % Perl function arguments purple
+        keywordstyle=[3]\color{Blue}\underbar, % Custom functions underlined and blue
+        identifierstyle=, % Nothing special about identifiers                                         
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\small, % Comments small dark green courier font
+        stringstyle=\color{Purple}, % Strings are purple
+        showstringspaces=false, % Don't put marks in string spaces
+        tabsize=8, % 5 spaces per tab
+        morekeywords={rand},
+        morekeywords=[2]{on, off, interp},
+        morekeywords=[3]{test},
+        morecomment=[l][\color{Blue}]{...}, % Line continuation (...) like blue comment
+        numbers=left, % Line numbers on left
+        firstnumber=1, % Line numbers start with line 1
+        numberstyle=\tiny\color{Blue}, % Line numbers are blue and small
+        stepnumber=5 % Line numbers go in steps of 5
+}
+\pagestyle{fancy}
+\fancyfoot[R]{\em \thepage / \pageref{LastPage}}
+\fancyfoot[C]{}
+\fancyfoot[L]{\em Master VIBOT - Pramita Winata}
+\fancyhead[R]{\em Lab 1 - {Camera Calibration}}
+\fancyhead[C]{}
+\fancyhead[L]{\em Visual Perception - Pramita Winata}
+\renewcommand{\headrulewidth}{0.2pt}
+\renewcommand{\footrulewidth}{0.2pt}
+
+%\,	 a small space
+%\:	 a medium space
+%\;	 a large space
+%\quad	 a really large space
+%\qquad	 a huge space
+%\!	 a negative space (moves things back to the left)
+%----------------------------------------------------------------------------------------
+%	NAME AND CLASS SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\hmwkTitle}{Camera Calibration} % Assignment title
+\newcommand{\hmwkDueDate}{Sunday,\ March\ 15,\ 2015} % Due date
+\newcommand{\hmwkClass}{Visual Perception} % Course/class
+\newcommand{\hmwkClassInstructor}{} % Teacher/lecturer
+\newcommand{\hmwkAuthorName}{ Pramita Winata } % Your name
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+\vspace{2in}
+\textmd{\textbf{\hmwkClass\\ \hmwkTitle}}\\  \vspace{0.1in}\large{\textit{\hmwkClassInstructor}}\\
+\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+\vspace{0.1in} %\large{\textit{\hmwkClassInstructor}}
+\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName}}
+\date{} % Insert date here if you want it to appear below your name
+
+%----------------------------------------------------------------------------------------
+\begin{document}
+%\maketitle 
+
+\clearpage
+\tableofcontents
+\clearpage
+\newpage
+
+% Title
+\hspace{1mm}
+\begin{center}
+\Large \textbf{Lab 1 - Camera Calibration}\\
+\textbf{Pramita Winata}
+\end{center}
+\hspace{1mm}
+
+\section{Introduction}
+In this lab, calibration of a simulated camera is implemented in MATLAB. Two methods, Halls and Faugeras methods are used to do the calibration. 
+The calibration is done in 12 steps on MATLAB environment. In the following sections, each of the steps will be discussed in detail.
+\section{Implementation}
+
+\subsection{Step 1 \& 2}
+\label{sec:step12}
+In this step, intrinsics and extrinsics parameters are given. From the given parameters, 
+intrinsics and extrinsics transformation matrices can be formed. The following MATLAB code, shows the composition of the intrinsic
+and extrinsic matrices. 
+%\lstinputlisting[language=Matlab, firstline= 16, lastline = 24 ]{lab1.m}
+From the given parameters, the obtained matrices are :
+
+\[ intrinsic = \left( \begin{array}{cccc}
+557.0943 & 0 & 326.3819 & 0 \\
+0 & 712.9824 & 298.6679 & 0  \\
+0 & 0 & 1 & 0 \end{array} \right)\] \\
+
+\[extrinsics =  \left( \begin{array}{cccc}
+-0.9511 & -0.2939 & -0.25 & 100 \\
+-0.2939 & 1.1102 & 0.5501 & 0  \\
+0.0955 & 0.4899 & -0.7968 & 1500 \\
+0 & 0 & 0 & 1\end{array} \right)\] 
+
+\subsection{Step 3}
+In this step, we need to generate random 3D points as our points in the world. The points will 
+lie in the range of [-480:480;-480:480;-480:480]. $rand$ function in MATLAB is used to generate this.
+Function $create3DPoints$ is created since we will generate more points later on.
+Generated 3D Points shows in Table \ref{table:3dpoints}
+\begin{center}
+\begin{table}[h!]
+
+\begin{center}
+\begin{tabular}[h!]{|c|c|c|}\hline
+\textbf{X} & \textbf{Y} & \textbf{Z}\\\hline
+-252.121901082644 & 29.6373667468113 & -392.161217914164\\\hline
+-90.8971969146324 &-379.347602768874 & -372.207396330214\\\hline
+273.050775114156 &-200.092494809346 & 99.3921012008514\\\hline
+445.845760527265 & -64.8144057884534 & 186.962106833223\\\hline
+247.775304277876 &-64.6633668987835 & 149.278118211396\\\hline
+-374.635151305870 & 416.409454449919 & -300.037625835181\\\hline
+\end{tabular}
+\end{center}
+
+\caption{Random 3D point in the range of [-480 480]}\label{table:3dpoints}
+\end{table}
+\end{center}
+
+
+\subsection{Step 4}
+After having a set of points in the world system, 
+we need to project the points to the image plane 
+using the camera transformation matrix. First, we need to create the transformation matrix
+which is the matrix multiplication of extrinsics and intrinsics parameters of the camera.
+We have obtained these matrices from Section \ref{sec:step12}. The resut obtained is 
+
+\[ transformation_matrix = \left( \begin{array}{cccc}
+-498.661466084079 & -3.82737110079675 & -399.328511955333 & 545282.28\\
+-181.020023319185 & 937.901756949879 & 154.258004987770 & 448001.85\\
+0.0954915028125263 & 0.489912387106340 & -0.796781123448736 & 1500\end{array} \right)\] 
+
+The 2D projection can be calculated by multiplied the 3D points with this $transformation_matrix$, using 
+this formula:
+ \begin{equation}
+\left( \begin{array}{ccc}
+s^{I} X_{u} \\ s^{I} Y_{u} \\ s
+ \end{array} \right )  = ^{C}K_{W}
+\left( \begin{array}{ccc}
+^{W}X_{W} \\ ^{W}Y_{W} \\ ^{W}Z_{W} \\ 1
+ \end{array} \right)
+ \end{equation}
+ 
+where $X_{u}$ is the projection in $X$, $Y_{u}$ is projection in Y, and $s$ is the scaling factor.
+Thus, we need to divide the resulting values from the matrix with the scaling factor to obtained the correct coordinates.
+
+The result is shown in Table \ref{table:2dpoints}
+\begin{center}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}[h!]{|c|c|}\hline
+\textbf{X} & \textbf{Y}\\\hline
+458.976366026981 & 255.666489901269\\\hline
+462.344109067495 & 31.9900144134019\\\hline	
+274.454109760419 & 167.727100854786\\\hline	
+182.504945403792 & 246.242172569165\\\hline	
+263.912932003601 & 266.218949802448\\\hline	
+445.824409942766 & 450.945827133137\\\hline
+\end{tabular}\end{center} 
+\caption{Projection of 3D points}
+\label{table:2dpoints}
+              
+\end{table}
+\end{center}
+ 
+
+
+
+\subsection{Step 5}
+In order to make clearer, we will visualize the projected points in this step. Furthermore, to be able
+to determine that the points are distributed in the image plane, we will draw the image window ($640x480$). 
+The plot is shown in Figure \ref{fig:projectionplot}. It can be seen that the points are covering most of the part in the image plane.
+However some parts, i.e left-up and left-down corner, are not covered. We can try to generate more points 
+to cover this sections. It is important that the points are well-distributed since we want to calibrate the camera
+such that all the section in the image plane is calibrated, thus making the computation more accurate. 
+
+
+\begin{figure}[h!]
+  \centering
+      \includegraphics[width=0.3\textwidth]{ProjectionPlot}
+      \caption{Projection in image plane}
+      \label{fig:projectionplot}
+  \end{figure}
+
+\subsection{Step 6}
+\label{sec:step6}
+In this step we will perform Hall calibration by generating the Hall transformation matrix, $A$. 
+In this method,  2 matrices need to be generated, $Q$ and $B$, where
+\begin{equation}
+ QA = B  \end{equation}\begin{equation}
+ Q_{2i-1} = ( ^{W}X_{wi}\quad ^{W}Y_{wi}\quad ^{W}Z_{wi}\quad 1\quad 0 \quad0\quad 0\quad 0\quad -^{I}X_{Ui}^{W}X_{wi} \quad-^{I}X_{Ui}^{W}Y_{wi} \quad-^{I}X_{Ui}^{W}Z_{wi}
+) \\ \\\end{equation}\begin{equation}
+ Q_{2i} = ( 0 \quad0\quad 0\quad 0\quad ^{W}X_{wi}\quad ^{W}Y_{wi}\quad ^{W}Z_{wi}\quad 1\quad -^{I}Y_{Ui}^{W}X_{wi} \quad-^{I}Y_{Ui}^{W}Y_{wi} \quad-^{I}YX_{Ui}^{W}Z_{wi}
+)\\\end{equation}\begin{equation}
+B_{2i-1} = (^{I}X_{Ui})\\\end{equation}\begin{equation}
+B_{2} = (^{I}Y_{Ui})\end{equation}
+
+ We used pseudo-inverse to solve the equation 
+\begin{equation}
+ A = ( Q^{t}Q)^{-1}Q^{t}B \\
+ \end{equation}
+ 
+Function in MATLAB to compute this is created $hall.m$. The resulting matrix is shown in below
+
+\[ A =  \left( \begin{array}{cccc}
+ -0.332440977385970	 & -0.00255158073526873	& -0.266219007968996 & 	363.521520001266 \\
+-0.120680015523622 &	0.625267837975171	& 0.102838669972363	& 298.667899998170\\
+6.36610019384538e-05	 & 0.000326608258108549	& -0.000531187415664940	& 1\\
+ \end{array}\right)\]
+ 
+\subsection{Step 7}
+Now we have 2 calibration matrices, one obtained in Section \ref{sec:step12} and one obtained in Section \ref{sec:step6}.
+Comparing these matrices by taking its differences we obtained
+\[ error\_hall = 1.0e^{-08} * \left( \begin{array}{cccc}
+   0.0003   & -0.0001    &  0.0001   &   0.1266\\
+    0.0023  &    0.0009   &  -0.0019   &  -0.1830\\
+    0.0000  &    0.0000   &  -0.0000   &        0\\
+    \end{array}\right)\]
+After normalized the error, the difference between these two matrices is $2.2249xe^{-9}$, which is very small.
+
+\subsection{Step 8 }
+In this step, we will give apply Gaussian noise to the projection points in the range [-1, +1] then compute the Hall calibration matrix again.
+We obtained 
+\begin{center}
+\begin{table}\begin{center}
+\begin{tabular}{|c|c|}\hline
+\textbf{X} & \textbf{Y}\\\hline
+458.061948059879 & 256.358739156947\\\hline
+462.312745670475 & 32.2144749734115\\\hline	
+274.272480524186 & 167.216809158221\\\hline	
+180.968451134149 & 246.555312068015\\\hline	
+263.769589736995 & 266.120278349022\\\hline	
+446.027212629086 & 450.236152902869\\\hline
+\end{tabular}
+\label{table:2dnoisypoints}
+\caption{Noisy points with Gaussian}\end{center}
+\end{table}
+\end{center}
+With the same technique, we calculate the Hall transformation matrix, $A_noisy$. 
+
+\[ A\_noisy \left( \begin{array}{cccc}
+ -0.326321744887294 & 	0.00729453108048483 & 	-0.281541448221668 & 	365.754258676637\\
+-0.0983350249729365 & 	0.644474396291619 & 	0.0771001611523039 & 	298.936066925949\\
+0.000145748220820647 & 	0.000378181494020234 & 	-0.000624994860327783 & 	1\\
+ \end{array}\right)\]
+ 
+Computing the differences obtained from the non-noisy Hall transformation matrix, we obtained:
+ \[ A\_noisy \left( \begin{array}{cccc}
+    0.0061  & 0.0223  &  0.0001 &  0.0098  \\
+    0.0192  & 0.0001   & -0.0153   & -0.0257  \\
+    -0.0001   &   2.2327  &    0.2682      &     0
+ \end{array}\right)\]
+Normalizing the error, we obtained 2.249207714123728 of error factor.
+
+Then, we project the 3D Points using this new noisy matrix. The resulting noisy projection is
+\begin{center}
+\begin{table}\begin{center}
+\begin{tabular}{|c|c|}\hline
+\textbf{X} & \textbf{Y}\\\hline
+458.077184024014 & 256.316314086929\\\hline
+462.340933207176 & 32.2491101720203\\\hline
+274.066161265893 & 167.176601014366\\\hline
+180.977948452559 & 246.570644311923\\\hline
+263.948835667053 & 266.133638712366\\\hline
+445.999165695872 & 450.254994013098\\\hline
+\end{tabular}
+\label{table:2dprojectionhallnoisy}
+\caption{Projection using noisy transformation matrix}
+\end{center}\end{table}
+\end{center}				
+
+We can compute the distance between this noisy points with non-noisy points and averaging them. 
+The distance is computed using eucledian distance.
+\[ Eucledian\_distances = \left( \begin{array}{c}
+1.27163538363805\\
+0.00449134473630293\\
+0.548642022462221\\
+2.15949979813704\\
+0.0507754477938485\\
+0.247141956145488\\
+\end{array}\right)\]
+$$ Average\_ distances = 0.7137.$$
+
+We can see that the distance between the projection points using non-noisy Hall matrix with the projection points using noisy Hall matrix 
+cannot be ignored. It is important to compute transformation matri as accurate as possible to get closer to the right projection point. 
+
+Figure \ref{fig:noisyproj} shows the visualization of this discrepancy, where blue is non-noisy projection and green is noisy-projction.
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=0.3\textwidth]{NoisyPoints}
+    \caption{Non-noisy projection vs noisy-projection}
+    \label{fig:noisyproj}
+\end{figure}
+
+\subsection{Step 9}
+In this step we need to increase the number of 3D points to 10 and 50 points and repeat step 8.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}\hline
+\textbf{Number of points} & \textbf{6} & \textbf{10} & \textbf{50} & \textbf{100} & \textbf{500}\\\hline
+\textbf{Transformation matrix error} & 2.24920 & 0.18432 & 0.14815 & 0.041929 & 7.56115e-10\\\hline
+\textbf{Average eucledian distances} & 0.7137 & 0.46077 & 0.16866 & 0.07994 & 0.06965\\\hline
+\end{tabular}
+\end{center}
+
+
+It is noticed that the more points used the more accurate calibration matrix is. 
+	
+\subsection{Step 10}
+Now, we will use other method to calibrate the camera, Faugeras method. First we need to compute the transformation matrix of Faugeras. This
+can be done using two method least-square method and SVD . MATLAB function $faugeras_LS.m$ and $faugeras_SVD.m$ are created for this. 
+The resulted matrix then used to extract the intrinsic and extrinsic parameters which will be used to form the transformation matrics. 
+Function $faugeras_calib_matrix.m$ is created for this. We obtained the Faugeras transformation matrix as follow:
+ \[ m\_F = \left( \begin{array}{cccc}
+-0.332440977389353 &	-0.00255158073383211	& -0.266219007970274	& 363.521520000007 \\
+-0.120680015546076	 & 0.625267837966632	& .102838669991796	& 298.667900000004\\
+6.36610018751645e-05	 & 0.000326608258070652	& -0.000531187415632749	& 1
+ \end{array}\right)\]
+Computing the difference between this matrix and the calibration matrix and then normalized it, we obtained an error
+of $8.136489615831788e-12$. This error is considered very small.
+
+\subsection{Step 11}
+Step 11. Add Gaussian noise to the 2D points (produce noise so that the 95% is in the range
+[-1,1], then in the range [-2,2] and finally in the range [-3,3] ) and compute vector X (repeat step
+10) for each rang. Which method is more accurate (Faugeras or Hall) with such noise, compute
+the accuracy from 2D point discrepancy?
+We then apply noises in 3 different ranges to the 2D points, and repeat Step 10. We calculate the error of the calibration matrix, which is computed by 
+taking the difference of the transformation matrix with the original matrix in Step 2.
+{%
+%\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\begin{table}[h!]
+ \begin{center}
+\begin{tabular}{|c|c|c|c|c|}\hline
+\textbf{Noise} & \textbf{[0 0]} & \textbf{[-1 1]}& \textbf{[-2 2]} & \textbf{[-3 3]}\\\hline
+\textbf{Faugeras} & 8.136489615831788e-12 & 1.032264446488363 & 2.447590196945333 & 2.654129136855054\\\hline
+\textbf{Hall} & 2.224952940303527e-09 & 1.032264447108434 & 2.447590198988834 & 2.654129139308839\\\hline
+\end{tabular}
+\end{center}
+\caption{Error in calibration matrix}
+\end{table}
+%}%
+
+In order to compare which method is better, we repeat Step 8 for every range of noises with both method. 
+We project the 3D points with each of the matrices, compute the discrepancy points' distance, and get the average of it.
+{%
+%\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+\textbf{Noise} & \textbf{[-1 1]} & \textbf{[-2 2]} & \textbf{[-3 3]}\\\hline
+\textbf{Faugeras} & 0.455940352150220 & 1.105659958418729& 2.715037024787530\\\hline
+\textbf{Hall} & 0.455940353210494 & 1.105659960282629& 2.715037026432457\\\hline
+\end{tabular}
+\end{center}
+\caption{Average of eucledian distances of noisy points using Hall and Faugeras method}
+
+\end{table}
+
+%}%
+
+It can be seen that both method give approximately the same discrepancy. Thus, Faugeras and Hall are equivalent.
+
+\subsection{Step 12}
+In this last step, we will draw the setting of the calibration environment to verify that the projection points is in the optical ray of the 3D point.
+The most important thing to understand in this step is to 
+be able to transform a point to different coordinate system. We need to choose one coordinate system to be drawn. 
+World coordinate system is chosen for this. Thus the camera points and image points need to be converted to the world coordinate system.
+The implementation of this environment drawing is done in $DrawSetting.m$.
+The drawing steps can be divided into 4 main parts:
+\begin{enumerate}
+ \item Drawing 3D Points : \\
+ This is fairly straigthforward as the points already in the world coordinate system.
+ \item Drawing the Camera points : \\
+ To convert camera points to world coordinate system, we use the inverse extrinsic matrix of the calibration matrix. 
+ Th multiplication between inverse extrinsic parameter and the point will change the point reference  system from camera to the world coordinate system.
+ \\Function $getCameraPointInWorld.m$ illustrates this.
+ \item Drawing the image plane \\
+ For this case, we convert the point to camera coordinate system first and then convert it to the world coordinate system. 
+ We utilize the parameters in intrinsic matrix and the focal length of the camera.
+  \[ ^{C}P_{I} \left( \begin{array}{c}
+      -(u0-x) * f / au \\ -(v0-x) * f / av \\ f \\ 1
+ \end{array}\right)\]
+ 
+ \item Drawing the projection points 
+ Drawing the projection points have the same flow with drawing the image plane. We need to convert the points 
+ to refer to camera coordinate system then convert it again to the world coordinate system.
+
+\end{enumerate}
+After drawing all of the necessary points and also the optical ray. It is noticed that the projection points
+lie in the optical ray defined by the 3D points and it is crossing in the focal point ( origin of the camera ). 
+It means that the calibration and conversion is done correctly. 
+\begin{figure}[h!]
+	\centering
+		\begin{subfigure}[p]{0.3\textwidth}
+		         \includegraphics[scale = 0.4]{Setting1}
+				\label{fig:set1}
+		\end{subfigure}%
+		\begin{subfigure}[p]{0.3\textwidth}
+			\includegraphics[scale = 0.4]{Setting2}
+			\label{fig:8-connectivity}
+		\end{subfigure}%
+			\caption{Optical ray}\label{fig:set2}
+			\vspace{-4mm}
+\end{figure}
+It is also noticed that when trying to draw the center point retinal plane, which is [u0, v0], with focal length
+as the distance from the focal point ( origin of camera ), the image border limit does not cover the whole 640 x 480 dimension , as shown in 
+
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=0.5\textwidth]{FocalLength}
+    \caption{Focal length}
+    \label{fig:noisyproj}
+\end{figure}
+
+\section{General comments}
+The lab has been proved very usefull to better understanding the camera calibration. 
+I definetly have much better understanding in camera calibration after doing the lab and the report.
+However, the time given seems not enough. Suggestion would be to make this work in three lab session instead of two.
+
+
+\clearpage
+
+\begin{appendices}
+\section{MATLAB Code}
+\lstinputlisting[language=Matlab]{lab1.m}
+\lstinputlisting[language=Matlab]{hall.m}
+\lstinputlisting[language=Matlab]{create3Dpoints.m}
+\lstinputlisting[language=Matlab]{compute_points_distance.m}
+\lstinputlisting[language=Matlab]{faugeras_LS.m}
+\lstinputlisting[language=Matlab]{faugeras_SVD.m}
+\lstinputlisting[language=Matlab]{faugeras_calib_matrix.m}
+\lstinputlisting[language=Matlab]{DrawSetting.m}
+\lstinputlisting[language=Matlab]{getCameraPointInWorld.m}
+\lstinputlisting[language=Matlab]{getImagePlaneInCamera.m}
+
+
+\end{appendices}
+\end{document}
